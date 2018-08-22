@@ -100,6 +100,18 @@ void TFMini::setConfigMode() {
   streamPtr->write((uint8_t)0x02);  
 }
 
+// exit config mode (not needed for single scan mode)
+void TFMini::exitConfigMode() {
+  streamPtr->write((uint8_t)0x42);
+  streamPtr->write((uint8_t)0x57);
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x02);  
+}
+
 // Set single scan mode (external trigger)
 void TFMini::setSingleScanMode() {
   setConfigMode();
@@ -126,6 +138,67 @@ void TFMini::externalTrigger() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x41);
+}
+
+
+void TFMini::setShortDistanceMode() {
+  // WARNING we assume firmware 16X (most recent one)
+  // and not 15X
+  setConfigMode();
+  streamPtr->write((uint8_t)0x42);
+  streamPtr->write((uint8_t)0x57);
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x11);
+  exitConfigMode();   
+}
+
+void TFMini::setMiddleDistanceMode() {
+  // WARNING we assume firmware 16X (most recent one)
+  // and not 15X
+  setConfigMode();
+  streamPtr->write((uint8_t)0x42);
+  streamPtr->write((uint8_t)0x57);
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x03);
+  streamPtr->write((uint8_t)0x11);
+  exitConfigMode();   
+}
+
+void TFMini::setLongDistanceMode() {
+  // valid for both 15X and 16X
+  setConfigMode();
+  streamPtr->write((uint8_t)0x42);
+  streamPtr->write((uint8_t)0x57);
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x07);
+  streamPtr->write((uint8_t)0x11);
+  exitConfigMode();   
+}
+
+void TFMini::setAutomaticDistanceMode(bool x){
+  setConfigMode();
+ streamPtr->write((uint8_t)0x42);
+  streamPtr->write((uint8_t)0x57);
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  streamPtr->write((uint8_t)0x00);
+  if (true == x)
+    streamPtr->write((uint8_t)0x00);
+  else
+    streamPtr->write((uint8_t)0x01);
+  streamPtr->write((uint8_t)0x14);
+  exitConfigMode();   
 }
 
 // Private: Handles the low-level bits of communicating with the TFMini, and detecting some communication errors.
