@@ -74,7 +74,7 @@ void setup() {
   Serial.println("Long distance mode selected");
   delay(100);
 
-
+  pinMode(LED_BUILTIN, OUTPUT);
 
 
 }
@@ -82,9 +82,7 @@ void setup() {
 
 void loop() {
 
-  pinMode(LED_BUILTIN, HIGH); 
-  Serial.println("Reading");
-
+  digitalWrite(LED_BUILTIN, HIGH); 
   // Take one TF Mini distance measurement
   tfmini.externalTrigger();
   uint16_t dist = tfmini.getDistance();
@@ -95,7 +93,7 @@ void loop() {
   Serial.print(dist);
   Serial.print(",");
   Serial.println(strength);
-  pinMode(LED_BUILTIN, LOW); 
+  digitalWrite(LED_BUILTIN, LOW); 
 
   // Wait some time before taking the next measurement
   // without delay, measurement is super fast
