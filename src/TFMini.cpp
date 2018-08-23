@@ -99,7 +99,7 @@ void TFMini::setConfigMode() {
   streamPtr->write((uint8_t)0x01);
   streamPtr->write((uint8_t)0x02);  
   streamPtr->flush();
-  readEcho();
+  waitForEcho();
 }
 
 // exit config mode (not needed for single scan mode)
@@ -112,8 +112,8 @@ void TFMini::exitConfigMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x02);
-  streamPtr->flush(); 
-  readEcho();
+  streamPtr->flush();
+  waitForEcho();
  
 }
 
@@ -165,7 +165,7 @@ void TFMini::setShortDistanceMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x11);
   streamPtr->flush();
-  readEcho();
+  waitForEcho();
 
   exitConfigMode();   
 }
@@ -183,7 +183,7 @@ void TFMini::setMiddleDistanceMode() {
   streamPtr->write((uint8_t)0x03);
   streamPtr->write((uint8_t)0x11);
   streamPtr->flush();  
-  readEcho();
+  waitForEcho();
 
   exitConfigMode();   
 }
@@ -202,7 +202,7 @@ void TFMini::setLongDistanceMode() {
   streamPtr->write((uint8_t)0x11);
   streamPtr->flush(); 
 
-  readEcho();
+  waitForEcho();
 
   exitConfigMode();   
 }
@@ -222,12 +222,12 @@ void TFMini::setAutomaticDistanceMode(bool x){
     streamPtr->write((uint8_t)0x01);
   streamPtr->write((uint8_t)0x14);
   streamPtr->flush();
-  readEcho();
+  waitForEcho();
 
   exitConfigMode();
 }
 
-void TFMini::readEcho(){
+void TFMini::waitForEcho(){
   // detect the packet header (config)
   uint8_t lastChar = 0x00;  
   while (1) {
@@ -241,11 +241,16 @@ void TFMini::readEcho(){
     }
   }
   // we detected the start of a frame: we eat the next 6 bytes
-  for (int i = 0; i < 6; i++) {
-    while (!streamPtr->available()) {
-      delay(1);
+  int k = 0;
+  while(1) {
+    while (streamPtr->available()) {
+      streamPtr->read();
+      k++;
+     if (k == 6)
+        return;// end of waitForEcho()
     }
   }
+ // Serial.println("echo wait ok");
 }
 
 // Private: Handles the low-level bits of communicating with the TFMini, and detecting some communication errors.

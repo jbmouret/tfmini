@@ -74,7 +74,7 @@ class TFMini {
     // Low-level communication
     void setConfigMode();
     void exitConfigMode();
-    void readEcho();
+    void waitForEcho();
     int takeMeasurement();
     
 };

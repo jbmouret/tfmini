@@ -60,15 +60,21 @@ void setup() {
   delay(100);
   
   // Step 4: Initialize single measurement mode with external trigger
+  // we need to start with this to stop streaming
+  tfmini.setSingleScanMode();
+  Serial.println("Single scan mode set");
+  delay(100);
+
 
   tfmini.setAutomaticDistanceMode(false);
   Serial.println("Automatic mode disabled");
+  delay(100);
 
-   tfmini.setLongDistanceMode();
-   Serial.println("Long distance mode selected");
+  tfmini.setLongDistanceMode();
+  Serial.println("Long distance mode selected");
+  delay(100);
 
-  tfmini.setSingleScanMode();
-  Serial.println("Single scan mode set");
+
 
 
 }
