@@ -53,18 +53,32 @@ void setup() {
   Serial.println ("Initializing...");
 
   // Step 2: Initialize the data rate for the SoftwareSerial port
-  Serial1.begin(TFMINI_BAUDRATE);
+  Serial2.begin(TFMINI_BAUDRATE);
 
   // Step 3: Initialize the TF Mini sensor
-  tfmini.begin(&Serial1);
+  tfmini.begin(&Serial2);
   delay(100);
   
   // Step 4: Initialize single measurement mode with external trigger
-  tfmini.setSingleScanMode();    
+
+  tfmini.setAutomaticDistanceMode(false);
+  Serial.println("Automatic mode disabled");
+
+   tfmini.setLongDistanceMode();
+   Serial.println("Long distance mode selected");
+
+  tfmini.setSingleScanMode();
+  Serial.println("Single scan mode set");
+
+
 }
 
 
 void loop() {
+
+  pinMode(LED_BUILTIN, HIGH); 
+  Serial.println("Reading");
+
   // Take one TF Mini distance measurement
   tfmini.externalTrigger();
   uint16_t dist = tfmini.getDistance();
@@ -75,9 +89,10 @@ void loop() {
   Serial.print(dist);
   Serial.print(",");
   Serial.println(strength);
+  pinMode(LED_BUILTIN, LOW); 
 
   // Wait some time before taking the next measurement
   // without delay, measurement is super fast
-  delay(1000);  
+  delay(100);  
 }
 

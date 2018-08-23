@@ -98,6 +98,8 @@ void TFMini::setConfigMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x01);
   streamPtr->write((uint8_t)0x02);  
+  streamPtr->flush();
+  readEcho();
 }
 
 // exit config mode (not needed for single scan mode)
@@ -109,7 +111,10 @@ void TFMini::exitConfigMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
-  streamPtr->write((uint8_t)0x02);  
+  streamPtr->write((uint8_t)0x02);
+  streamPtr->flush(); 
+  readEcho();
+ 
 }
 
 // Set single scan mode (external trigger)
@@ -124,11 +129,14 @@ void TFMini::setSingleScanMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x40);
+  streamPtr->flush();
+  // no echo (special param)
 }
 
 // Send external trigger
 void TFMini::externalTrigger() {
-  setConfigMode();      
+  setConfigMode();
+
   // send trigger
   streamPtr->write((uint8_t)0x42);
   streamPtr->write((uint8_t)0x57);
@@ -138,6 +146,8 @@ void TFMini::externalTrigger() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x41);
+  streamPtr->flush();
+  // no echo (special param)
 }
 
 
@@ -145,6 +155,7 @@ void TFMini::setShortDistanceMode() {
   // WARNING we assume firmware 16X (most recent one)
   // and not 15X
   setConfigMode();
+
   streamPtr->write((uint8_t)0x42);
   streamPtr->write((uint8_t)0x57);
   streamPtr->write((uint8_t)0x02);
@@ -153,6 +164,9 @@ void TFMini::setShortDistanceMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x11);
+  streamPtr->flush();
+  readEcho();
+
   exitConfigMode();   
 }
 
@@ -168,12 +182,16 @@ void TFMini::setMiddleDistanceMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x03);
   streamPtr->write((uint8_t)0x11);
+  streamPtr->flush();  
+  readEcho();
+
   exitConfigMode();   
 }
 
 void TFMini::setLongDistanceMode() {
   // valid for both 15X and 16X
   setConfigMode();
+
   streamPtr->write((uint8_t)0x42);
   streamPtr->write((uint8_t)0x57);
   streamPtr->write((uint8_t)0x02);
@@ -182,12 +200,17 @@ void TFMini::setLongDistanceMode() {
   streamPtr->write((uint8_t)0x00);
   streamPtr->write((uint8_t)0x07);
   streamPtr->write((uint8_t)0x11);
+  streamPtr->flush(); 
+
+  readEcho();
+
   exitConfigMode();   
 }
 
 void TFMini::setAutomaticDistanceMode(bool x){
   setConfigMode();
- streamPtr->write((uint8_t)0x42);
+
+  streamPtr->write((uint8_t)0x42);
   streamPtr->write((uint8_t)0x57);
   streamPtr->write((uint8_t)0x02);
   streamPtr->write((uint8_t)0x00);
@@ -198,7 +221,31 @@ void TFMini::setAutomaticDistanceMode(bool x){
   else
     streamPtr->write((uint8_t)0x01);
   streamPtr->write((uint8_t)0x14);
-  exitConfigMode();   
+  streamPtr->flush();
+  readEcho();
+
+  exitConfigMode();
+}
+
+void TFMini::readEcho(){
+  // detect the packet header (config)
+  uint8_t lastChar = 0x00;  
+  while (1) {
+    if (streamPtr->available()) {      
+      uint8_t curChar = streamPtr->read();
+      if ((lastChar == 0x42) && (curChar == 0x57)) {
+        break;
+      } else {
+        lastChar = curChar;
+      }         
+    }
+  }
+  // we detected the start of a frame: we eat the next 6 bytes
+  for (int i = 0; i < 6; i++) {
+    while (!streamPtr->available()) {
+      delay(1);
+    }
+  }
 }
 
 // Private: Handles the low-level bits of communicating with the TFMini, and detecting some communication errors.
@@ -221,8 +268,8 @@ int TFMini::takeMeasurement() {
         lastChar = curChar;
         numCharsRead += 1; 
       }           
-    }
-
+    } 
+    
     // Error detection:  If we read more than X characters without finding a frame header, then it's likely there is an issue with 
     // the Serial connection, and we should timeout and throw an error. 
     if (numCharsRead > TFMINI_MAXBYTESBEFOREHEADER) {

@@ -63,6 +63,7 @@ class TFMini {
     uint16_t getDistance();
     uint16_t getRecentSignalStrength();
     void externalTrigger();
+    void setStandardOutputMode();
 
   private:
     Stream* streamPtr;
@@ -71,9 +72,9 @@ class TFMini {
     uint16_t strength;
     
     // Low-level communication
-    void setStandardOutputMode();
     void setConfigMode();
     void exitConfigMode();
+    void readEcho();
     int takeMeasurement();
     
 };
